@@ -1,7 +1,7 @@
-import { Box, List, ThemeIcon } from '@mantine/core'
+import { Box, List, ThemeIcon, Flex } from '@mantine/core'
 import useSWR from "swr"
 import AddTodo from './components/AddTodo'
-import { CheckCircleFillIcon } from '@primer/octicons-react';
+import { CheckCircleFillIcon, TrashIcon } from '@primer/octicons-react';
 
 export interface Todo {
   id: number;
@@ -12,8 +12,7 @@ export interface Todo {
 
 export const ENDPOINT = 'http://localhost:4000'
 
-const fetcher = (url: string) =>
-  fetch(`${ENDPOINT}/${url}`).then((r) => r.json())
+const fetcher = (url: string) => fetch(`${ENDPOINT}/${url}`).then((r) => r.json())
 
 function App() {
 
@@ -27,33 +26,53 @@ function App() {
     mutate(updated)
   }
 
+  async function deleteTodo(id: number) {
+    const updated = await fetch(`${ENDPOINT}/api/todos/${id}`, {
+      method: 'DELETE',
+
+    }).then(r => r.json())
+
+    mutate(updated)
+  }
+
   return (
     <Box
-      sx={(theme) => ({
+      sx={() => ({
         padding: '2rem',
         width: '100%',
-        maxWidth: '40rem',
+        maxWidth: '30rem',
         margin: '0 auto'
       })}
     >
-      <List spacing="xs" size="sm" mb={12} center>
+      <List spacing="xs" size="sm" mb={12} center >
         {data?.map((todo) => {
           return (
-            <List.Item
-              key={`todo__${todo.id}`}
-              onClick={() => markTodoDone(todo.id)}
-              icon={todo.done ?
-                (<ThemeIcon color='teal' size={24} radius='xl'>
-                  <CheckCircleFillIcon size={20} />
-                </ThemeIcon>
-                ) :
-                (<ThemeIcon color='gray' size={24} radius='xl'>
-                  <CheckCircleFillIcon size={20} />
-                </ThemeIcon>
-                )}
+            <Flex
+              justify="space-between"
             >
-              {todo.title}
-            </List.Item>
+              <List.Item
+                key={`todo__${todo.id}`}
+                mb={12}
+                icon={todo.done ?
+                  (<ThemeIcon color='teal' size={24} radius='xl' >
+                    <CheckCircleFillIcon size={20} />
+                  </ThemeIcon>
+                  ) :
+                  (<ThemeIcon color='gray' size={24} radius='xl'
+                    onClick={() => markTodoDone(todo.id)}
+                  >
+                    <CheckCircleFillIcon size={20} />
+                  </ThemeIcon>
+                  )}
+              >
+                {todo.title}
+              </List.Item>
+              <ThemeIcon color='red'
+                onClick={() => deleteTodo(todo.id)}
+              >
+                <TrashIcon size={16} />
+              </ThemeIcon>
+            </Flex>
           )
         })}
       </List>
